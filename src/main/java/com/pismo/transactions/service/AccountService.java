@@ -22,6 +22,20 @@ public class AccountService {
         return accountRepository.save(account);
     }
 
+    public Account createAccount(String documentNumber, double creditLimit) {
+        if (documentNumber == null || documentNumber.trim().isEmpty()) {
+            throw new IllegalArgumentException("document_number is required");
+        }
+        Account account = new Account(documentNumber,creditLimit);
+        return accountRepository.save(account);
+    }
+    /*
+    {
+    "code": 400,
+    "error": "Document number already exist in another account"
+    }
+    * */
+
     public Account getAccount(Long accountId) {
         return accountRepository.findById(accountId)
                 .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + accountId));

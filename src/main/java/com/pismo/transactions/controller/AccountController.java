@@ -25,7 +25,7 @@ public class AccountController {
 
     @PostMapping
     public ResponseEntity<AccountResponse> createAccount(@RequestBody CreateAccountRequest request) {
-        Account account = accountService.createAccount(request.getDocumentNumber());
+        Account account = accountService.createAccount(request.getDocumentNumber(), request.getCreditLimit());
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(account));
     }
 
@@ -36,6 +36,6 @@ public class AccountController {
     }
 
     private AccountResponse toResponse(Account account) {
-        return new AccountResponse(account.getAccountId(), account.getDocumentNumber());
+        return new AccountResponse(account.getAccountId(), account.getDocumentNumber(), account.getCreditLimit());
     }
 }

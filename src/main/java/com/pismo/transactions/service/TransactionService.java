@@ -10,6 +10,8 @@ import com.pismo.transactions.repository.TransactionRepository;
 import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+
 @Service
 public class TransactionService {
 
@@ -25,9 +27,13 @@ public class TransactionService {
         this.operationTypeRepository = operationTypeRepository;
     }
 
+    @Transactional
     public Transaction createTransaction(Long accountId, Long operationTypeId, Double amount) {
         if (accountId == null || operationTypeId == null || amount == null) {
             throw new IllegalArgumentException("account_id, operation_type_id, and amount are required");
+        }
+        if (amount<0) {
+            throw new IllegalArgumentException("amount must not be negative");
         }
 
         if (amount == 0) {
@@ -41,7 +47,14 @@ public class TransactionService {
                 .orElseThrow(() -> new ResourceNotFoundException("OperationType not found with id: " + operationTypeId));
 
         double adjustedAmount = adjustAmount(operationTypeId, amount);
-
+        double balance = account.getCreditLimit();
+        double newAmount = balance+adjustedAmount;
+        if(newAmount<0)
+        {
+            throw new IllegalArgumentException("not available balance");
+        }
+        account.setCreditLimit(newAmount);
+        accountRepository.save(account);
         Transaction transaction = new Transaction(account, operationType, adjustedAmount, LocalDateTime.now());
         return transactionRepository.save(transaction);
     }
